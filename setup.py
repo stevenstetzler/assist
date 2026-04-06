@@ -20,7 +20,10 @@ _BSP_FILES = {
     "sb441-n16.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp",
 }
 
-_DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
+_DATA_DIR = os.path.join(
+    os.environ.get("ASSIST_DIR", os.path.abspath(os.path.dirname(__file__))),
+    "data",
+)
 
 
 def download_bsp_files(data_dir=None):
@@ -217,6 +220,11 @@ setup(name='assist',
     keywords='astronomy astrophysics nbody integrator',
     packages=['assist'],
     package_data={"assist": ["assist.h", "py.typed"]},
+    entry_points={
+        "console_scripts": [
+            "assist=assist.query:main",
+        ],
+    },
     cmdclass={'build_ext': build_ext, 'download_data': download_data},
     setup_requires=['rebound>=4.4.11', 'numpy'],
     install_requires=['rebound>=4.4.11', 'numpy'],
