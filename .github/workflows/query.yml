@@ -1,0 +1,42 @@
+name: ASSIST Query Integration Tests
+
+on: [push, pull_request]
+
+jobs:
+  query-integration:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package with server extras
+        # Installs assist + astroquery, fastapi, uvicorn, pydantic
+        run: pip install ".[server]"
+
+      - name: Download ephemeris data
+        working-directory: ./data/
+        run: |
+          wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp
+          wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp
+
+      - name: Verify assist CLI is installed
+        run: assist --help
+
+      - name: Run CLI and Python API smoke tests + Apophis vs Horizons
+        working-directory: /tmp
+        env:
+          ASSIST_DIR: ${{ github.workspace }}
+        run: |
+          python -m unittest discover \
+            -s "${{ github.workspace }}/assist/test" \
+            -p "test_query_integration.py" \
+            -v
