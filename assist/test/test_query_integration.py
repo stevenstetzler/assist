@@ -92,6 +92,8 @@ class TestApophisVsHorizons(unittest.TestCase):
         )
         self.assertGreaterEqual(len(results), n,
                                 f"Expected at least {n} output steps, got {len(results)}")
+        self.assertLessEqual(len(results), n + 1,
+                             f"Expected at most {n + 1} output steps, got {len(results)}")
 
         # --- Horizons reference ---
         jd_times   = [sv.t for sv in results]
