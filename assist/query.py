@@ -11,6 +11,8 @@ This module provides:
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import os
 import sys
@@ -231,9 +233,6 @@ def _format_json(results: List[StateVector]) -> str:
 
 def _format_csv(results: List[StateVector]) -> str:
     """Return a CSV-formatted string of state vectors."""
-    import io
-    import csv
-
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(["t", "x", "y", "z", "vx", "vy", "vz"])
