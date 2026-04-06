@@ -9,7 +9,7 @@ from distutils.sysconfig import get_python_lib
 try:
     from setuptools import Extension, setup
     from setuptools.command.build_ext import build_ext as _build_ext
-    from setuptools.command.install import install as _install
+    import setuptools
 except ImportError:
     print("Installing ASSIST requires setuptools.  Do 'pip install setuptools'.")
     sys.exit(1)
@@ -38,20 +38,18 @@ def download_bsp_files(data_dir=None):
         print(f"  Saved to {dest}")
 
 
-class download_data(_install):
+class download_data(setuptools.Command):
     """Custom 'setup.py download_data' command to fetch BSP ephemeris files."""
 
     description = "Download required BSP ephemeris files into the data/ directory"
-    user_options = _install.user_options + [
+    user_options = [
         ("data-dir=", None, "Directory in which to place the downloaded BSP files"),
     ]
 
     def initialize_options(self):
-        super().initialize_options()
         self.data_dir = None
 
     def finalize_options(self):
-        super().finalize_options()
         if self.data_dir is None:
             self.data_dir = _DATA_DIR
 

@@ -153,7 +153,9 @@ def integrate(
     # 4. Integrate and collect output at each requested epoch
     # ------------------------------------------------------------------
     times = np.arange(t_initial, t_final + tstep * 0.5, tstep)
-    # Clamp the last sample to t_final so we don't overshoot
+    # Add half a step to the upper bound so that np.arange includes t_final
+    # when it falls exactly on a grid point (floating-point safe).
+    # Clamp any overshoot beyond t_final using a small tolerance (1e-9 days ≈ 0.1 ms).
     times = times[times <= t_final + 1e-9]
 
     results: List[StateVector] = []
