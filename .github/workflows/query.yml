@@ -2,6 +2,9 @@ name: ASSIST Query Integration Tests
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   query-integration:
 
@@ -11,7 +14,7 @@ jobs:
         python-version: ["3.10"]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4

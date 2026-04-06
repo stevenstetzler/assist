@@ -160,7 +160,8 @@ class TestAssistCLI(unittest.TestCase):
         self.assertIn("vz", data[0])
 
     def test_cli_csv_output(self):
-        import csv, io
+        import csv
+        import io
         result = self._run_cli("--output", "csv")
         self.assertEqual(result.returncode, 0,
                          f"CLI exited with non-zero code:\n{result.stderr}")
