@@ -57,7 +57,7 @@ class TestApophisVsHorizons(unittest.TestCase):
 
         Queries are chunked to stay within the Horizons API epoch limit.
         """
-        CHUNK = 500
+        CHUNK = 50
         rows_by_jd = {}
         for start in range(0, len(jd_epochs), CHUNK):
             chunk = jd_epochs[start : start + CHUNK]
