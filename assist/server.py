@@ -24,11 +24,11 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import List
 
-import assist
-
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
+from .ephem import Ephem
+from .extras import Extras
 from .query import StateVector as _StateVector
 from .query import integrate as _integrate
 from .query import load_ephem, DEFAULT_PLANETS_BSP, DEFAULT_ASTEROIDS_BSP
@@ -52,10 +52,10 @@ class StateVectorModel(BaseModel):
 # ---------------------------------------------------------------------------
 # Cache the Ephem object across requests so BSP files are only parsed once.
 # ---------------------------------------------------------------------------
-_ephem: assist.Ephem | None = None
+_ephem: Ephem | None = None
 
 
-def get_ephem() -> assist.Ephem:
+def get_ephem() -> Ephem:
     global _ephem
     if _ephem is None:
         try:

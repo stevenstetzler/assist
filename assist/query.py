@@ -21,10 +21,12 @@ from typing import List, Optional
 
 import numpy as np
 import rebound
-import assist
 
 from astroquery.jplhorizons import Horizons
 from astroquery.jplsbdb import SBDB
+
+from .ephem import Ephem
+from .extras import Extras
 
 # ---------------------------------------------------------------------------
 # Ephemeris file paths
@@ -59,7 +61,7 @@ class StateVector:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def load_ephem(planets_bsp: str = DEFAULT_PLANETS_BSP, asteroids_bsp: str = DEFAULT_ASTEROIDS_BSP) -> assist.Ephem:
+def load_ephem(planets_bsp: str = DEFAULT_PLANETS_BSP, asteroids_bsp: str = DEFAULT_ASTEROIDS_BSP) -> Ephem:
     """Load the ASSIST ephemeris, raising a descriptive error if BSP files are missing."""
     for path in (planets_bsp, asteroids_bsp):
         if not os.path.exists(path):
@@ -67,7 +69,7 @@ def load_ephem(planets_bsp: str = DEFAULT_PLANETS_BSP, asteroids_bsp: str = DEFA
                 f"BSP file not found: {path}. "
                 "Run 'python setup.py download_data' first."
             )
-    return assist.Ephem(planets_bsp, asteroids_bsp)
+    return Ephem(planets_bsp, asteroids_bsp)
 
 
 # Internal alias kept for backwards compatibility
@@ -119,7 +121,7 @@ def integrate(
     tstart: float,
     tstop: float,
     tstep: float,
-    ephem: Optional[assist.Ephem] = None,
+    ephem: Optional[Ephem] = None,
     planets_bsp: str = _PLANETS_BSP,
     asteroids_bsp: str = _ASTEROIDS_BSP,
 ) -> List[StateVector]:
@@ -137,7 +139,7 @@ def integrate(
     tstep:
         Output cadence in days (must be > 0).
     ephem:
-        Pre-loaded :class:`assist.Ephem` instance.  If *None*, one is created
+        Pre-loaded :class:`Ephem` instance.  If *None*, one is created
         from *planets_bsp* / *asteroids_bsp*.
     planets_bsp:
         Path to the planets BSP file (de440.bsp).
@@ -173,7 +175,7 @@ def integrate(
     sim.t = t_initial
     sim.ri_ias15.min_dt = 0.001
 
-    extras = assist.Extras(sim, ephem)
+    extras = Extras(sim, ephem)
     extras.gr_eih_sources = 11  # GR for Sun and all planets
     # Apply non-gravitational parameters: A1 (radial), A2 (transverse), A3 (normal)
     # These model rocket-like accelerations (e.g. cometary outgassing, Yarkovsky effect).
