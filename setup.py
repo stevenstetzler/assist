@@ -1,6 +1,7 @@
 import inspect
 import os
 import sys
+import urllib.request
 from codecs import open
 from distutils import sysconfig
 from distutils.sysconfig import get_python_lib
@@ -8,9 +9,54 @@ from distutils.sysconfig import get_python_lib
 try:
     from setuptools import Extension, setup
     from setuptools.command.build_ext import build_ext as _build_ext
+    from setuptools.command.install import install as _install
 except ImportError:
     print("Installing ASSIST requires setuptools.  Do 'pip install setuptools'.")
     sys.exit(1)
+
+# URLs for the required BSP ephemeris files
+_BSP_FILES = {
+    "de440.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp",
+    "sb441-n16.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp",
+}
+
+_DATA_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
+
+
+def download_bsp_files(data_dir=None):
+    """Download the required BSP ephemeris files into *data_dir* (default: ./data)."""
+    if data_dir is None:
+        data_dir = _DATA_DIR
+    os.makedirs(data_dir, exist_ok=True)
+    for filename, url in _BSP_FILES.items():
+        dest = os.path.join(data_dir, filename)
+        if os.path.exists(dest):
+            print(f"  {filename} already present, skipping.")
+            continue
+        print(f"  Downloading {filename} from {url} ...")
+        urllib.request.urlretrieve(url, dest)
+        print(f"  Saved to {dest}")
+
+
+class download_data(_install):
+    """Custom 'setup.py download_data' command to fetch BSP ephemeris files."""
+
+    description = "Download required BSP ephemeris files into the data/ directory"
+    user_options = _install.user_options + [
+        ("data-dir=", None, "Directory in which to place the downloaded BSP files"),
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.data_dir = None
+
+    def finalize_options(self):
+        super().finalize_options()
+        if self.data_dir is None:
+            self.data_dir = _DATA_DIR
+
+    def run(self):
+        download_bsp_files(self.data_dir)
 
 suffix = sysconfig.get_config_var('EXT_SUFFIX')
 if suffix is None:
@@ -173,7 +219,7 @@ setup(name='assist',
     keywords='astronomy astrophysics nbody integrator',
     packages=['assist'],
     package_data={"assist": ["assist.h", "py.typed"]},
-    cmdclass={'build_ext':build_ext},
+    cmdclass={'build_ext': build_ext, 'download_data': download_data},
     setup_requires=['rebound>=4.4.11', 'numpy'],
     install_requires=['rebound>=4.4.11', 'numpy'],
     tests_require=["numpy","matplotlib","rebound"],
