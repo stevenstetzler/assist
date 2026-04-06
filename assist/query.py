@@ -27,12 +27,17 @@ from astroquery.jplsbdb import SBDB
 # ---------------------------------------------------------------------------
 # Ephemeris file paths
 # ---------------------------------------------------------------------------
-_DATA_DIR = os.path.join(
+DEFAULT_DATA_DIR = os.path.join(
     os.environ.get("ASSIST_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data",
 )
-_PLANETS_BSP = os.path.join(_DATA_DIR, "de440.bsp")
-_ASTEROIDS_BSP = os.path.join(_DATA_DIR, "sb441-n16.bsp")
+DEFAULT_PLANETS_BSP = os.path.join(DEFAULT_DATA_DIR, "de440.bsp")
+DEFAULT_ASTEROIDS_BSP = os.path.join(DEFAULT_DATA_DIR, "sb441-n16.bsp")
+
+# Internal aliases kept for backwards compatibility
+_DATA_DIR = DEFAULT_DATA_DIR
+_PLANETS_BSP = DEFAULT_PLANETS_BSP
+_ASTEROIDS_BSP = DEFAULT_ASTEROIDS_BSP
 
 
 # ---------------------------------------------------------------------------
@@ -52,7 +57,7 @@ class StateVector:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def _load_ephem(planets_bsp: str = _PLANETS_BSP, asteroids_bsp: str = _ASTEROIDS_BSP) -> assist.Ephem:
+def load_ephem(planets_bsp: str = DEFAULT_PLANETS_BSP, asteroids_bsp: str = DEFAULT_ASTEROIDS_BSP) -> assist.Ephem:
     """Load the ASSIST ephemeris, raising a descriptive error if BSP files are missing."""
     for path in (planets_bsp, asteroids_bsp):
         if not os.path.exists(path):
@@ -61,6 +66,10 @@ def _load_ephem(planets_bsp: str = _PLANETS_BSP, asteroids_bsp: str = _ASTEROIDS
                 "Run 'python setup.py download_data' first."
             )
     return assist.Ephem(planets_bsp, asteroids_bsp)
+
+
+# Internal alias kept for backwards compatibility
+_load_ephem = load_ephem
 
 
 def query_horizons_state(desig: str, jd: float) -> rebound.Particle:
@@ -164,6 +173,8 @@ def integrate(
 
     extras = assist.Extras(sim, ephem)
     extras.gr_eih_sources = 11  # GR for Sun and all planets
+    # Apply non-gravitational parameters: A1 (radial), A2 (transverse), A3 (normal)
+    # These model rocket-like accelerations (e.g. cometary outgassing, Yarkovsky effect).
     extras.particle_params = np.array([a1, a2, a3])
 
     # 4. Integrate and sample
