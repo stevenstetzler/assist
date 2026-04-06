@@ -189,7 +189,7 @@ with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(name='assist',
-    version='1.1.9',
+    use_scm_version=True,
     description='A library high accuracy ephemeris in REBOUND',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -226,7 +226,7 @@ setup(name='assist',
         ],
     },
     cmdclass={'build_ext': build_ext, 'download_data': download_data},
-    setup_requires=['rebound>=4.4.11', 'numpy'],
+    setup_requires=['setuptools-scm', 'rebound>=4.4.11', 'numpy'],
     install_requires=['rebound>=4.4.11', 'numpy'],
     extras_require={
         'server': ['fastapi', 'uvicorn', 'astroquery', 'pydantic'],

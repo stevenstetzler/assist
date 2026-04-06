@@ -2,17 +2,4 @@
 requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
-[project]
-name = "assist"
-dynamic = ["version"]
-description = "A library for high accuracy ephemeris in REBOUND"
-requires-python = ">=3.8"
-
-[project.optional-dependencies]
-server = [
-    "fastapi",
-    "uvicorn",
-    "astroquery",
-]
-
 [tool.setuptools_scm]
