@@ -204,6 +204,52 @@ def integrate(
 
 
 # ---------------------------------------------------------------------------
+# Output formatters
+# ---------------------------------------------------------------------------
+_ASCII_HEADER = (
+    f"{'t (JD)':>16}  {'x (AU)':>18}  {'y (AU)':>18}  {'z (AU)':>18}"
+    f"  {'vx (AU/d)':>18}  {'vy (AU/d)':>18}  {'vz (AU/d)':>18}"
+)
+_ASCII_SEP = "-" * len(_ASCII_HEADER)
+
+
+def _format_ascii(results: List[StateVector]) -> str:
+    """Return a fixed-width ASCII table of state vectors."""
+    lines = [_ASCII_HEADER, _ASCII_SEP]
+    for sv in results:
+        lines.append(
+            f"{sv.t:>16.4f}  {sv.x:>18.10e}  {sv.y:>18.10e}  {sv.z:>18.10e}"
+            f"  {sv.vx:>18.10e}  {sv.vy:>18.10e}  {sv.vz:>18.10e}"
+        )
+    return "\n".join(lines)
+
+
+def _format_json(results: List[StateVector]) -> str:
+    """Return a JSON array of state vectors."""
+    return json.dumps([asdict(sv) for sv in results], indent=2)
+
+
+def _format_csv(results: List[StateVector]) -> str:
+    """Return a CSV-formatted string of state vectors."""
+    import io
+    import csv
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["t", "x", "y", "z", "vx", "vy", "vz"])
+    for sv in results:
+        writer.writerow([sv.t, sv.x, sv.y, sv.z, sv.vx, sv.vy, sv.vz])
+    return buf.getvalue().rstrip("\r\n")
+
+
+_FORMATTERS = {
+    "table": _format_ascii,
+    "json": _format_json,
+    "csv": _format_csv,
+}
+
+
+# ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
 def main(argv: Optional[list] = None) -> None:
@@ -212,13 +258,22 @@ def main(argv: Optional[list] = None) -> None:
         prog="assist",
         description=(
             "Integrate the orbit of a solar-system object using ASSIST and "
-            "print barycentric state vectors as JSON."
+            "print barycentric state vectors."
         ),
     )
     parser.add_argument("desig", help="Object designation (e.g. 'Apophis' or '99942')")
     parser.add_argument("tstart", type=float, help="Start Julian Date")
     parser.add_argument("tstop", type=float, help="Stop Julian Date")
     parser.add_argument("tstep", type=float, help="Output time step in days")
+    parser.add_argument(
+        "--output",
+        choices=["table", "json", "csv"],
+        default="table",
+        help=(
+            "Output format. 'table' (default) prints a fixed-width ASCII table; "
+            "'json' prints machine-readable JSON; 'csv' prints comma-separated values."
+        ),
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -227,7 +282,7 @@ def main(argv: Optional[list] = None) -> None:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
-    print(json.dumps([asdict(sv) for sv in results], indent=2))
+    print(_FORMATTERS[args.output](results))
 
 
 if __name__ == "__main__":
