@@ -28,8 +28,9 @@ class download_data(setuptools.Command):
         pass
 
     def run(self):
+        from pathlib import Path
         from assist._data import download_bsp_files, get_data_dir
-        data_dir = self.data_dir or (get_data_dir() / "data")
+        data_dir = Path(self.data_dir) if self.data_dir else (get_data_dir() / "data")
         download_bsp_files(data_dir)
 
 suffix = sysconfig.get_config_var('EXT_SUFFIX')
