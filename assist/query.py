@@ -116,8 +116,8 @@ def integrate(
     tstop: float,
     tstep: float,
     ephem: Optional[Ephem] = None,
-    planets_bsp: str = _PLANETS_BSP,
-    asteroids_bsp: str = _ASTEROIDS_BSP,
+    planets_bsp: str = DEFAULT_PLANETS_BSP,
+    asteroids_bsp: str = DEFAULT_ASTEROIDS_BSP,
 ) -> List[StateVector]:
     """Integrate the orbit of *desig* from *tstart* to *tstop*.
 
