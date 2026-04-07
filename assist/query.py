@@ -27,21 +27,15 @@ from astroquery.jplsbdb import SBDB
 
 from .ephem import Ephem
 from .extras import Extras
+from ._data import get_data_dir
 
 # ---------------------------------------------------------------------------
 # Ephemeris file paths
 # ---------------------------------------------------------------------------
-DEFAULT_DATA_DIR = os.path.join(
-    os.environ.get("ASSIST_DIR", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "data",
-)
-DEFAULT_PLANETS_BSP = os.path.join(DEFAULT_DATA_DIR, "de440.bsp")
-DEFAULT_ASTEROIDS_BSP = os.path.join(DEFAULT_DATA_DIR, "sb441-n16.bsp")
-
-# Internal aliases kept for backwards compatibility
-_DATA_DIR = DEFAULT_DATA_DIR
-_PLANETS_BSP = DEFAULT_PLANETS_BSP
-_ASTEROIDS_BSP = DEFAULT_ASTEROIDS_BSP
+_assist_dir = get_data_dir()
+DEFAULT_DATA_DIR = str(_assist_dir / "data")
+DEFAULT_PLANETS_BSP = str(_assist_dir / "data" / "de440.bsp")
+DEFAULT_ASTEROIDS_BSP = str(_assist_dir / "data" / "sb441-n16.bsp")
 
 
 # ---------------------------------------------------------------------------

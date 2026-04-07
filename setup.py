@@ -1,8 +1,6 @@
 import inspect
 import os
 import sys
-import urllib.request
-from codecs import open
 from distutils import sysconfig
 from distutils.sysconfig import get_python_lib
 
@@ -13,32 +11,6 @@ try:
 except ImportError:
     print("Installing ASSIST requires setuptools.  Do 'pip install setuptools'.")
     sys.exit(1)
-
-# URLs for the required BSP ephemeris files
-_BSP_FILES = {
-    "de440.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp",
-    "sb441-n16.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp",
-}
-
-_DATA_DIR = os.path.join(
-    os.environ.get("ASSIST_DIR", os.path.abspath(os.path.dirname(__file__))),
-    "data",
-)
-
-
-def download_bsp_files(data_dir=None):
-    """Download the required BSP ephemeris files into *data_dir* (default: ./data)."""
-    if data_dir is None:
-        data_dir = _DATA_DIR
-    os.makedirs(data_dir, exist_ok=True)
-    for filename, url in _BSP_FILES.items():
-        dest = os.path.join(data_dir, filename)
-        if os.path.exists(dest):
-            print(f"  {filename} already present, skipping.")
-            continue
-        print(f"  Downloading {filename} from {url} ...")
-        urllib.request.urlretrieve(url, dest)
-        print(f"  Saved to {dest}")
 
 
 class download_data(setuptools.Command):
@@ -53,11 +25,12 @@ class download_data(setuptools.Command):
         self.data_dir = None
 
     def finalize_options(self):
-        if self.data_dir is None:
-            self.data_dir = _DATA_DIR
+        pass
 
     def run(self):
-        download_bsp_files(self.data_dir)
+        from assist._data import download_bsp_files, get_data_dir
+        data_dir = self.data_dir or (get_data_dir() / "data")
+        download_bsp_files(data_dir)
 
 suffix = sysconfig.get_config_var('EXT_SUFFIX')
 if suffix is None:
@@ -184,54 +157,7 @@ libassistmodule = Extension(
     extra_link_args=extra_link_args,
 )
 
-here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
-setup(name='assist',
-    use_scm_version=True,
-    description='A library high accuracy ephemeris in REBOUND',
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url='https://github.com/matthewholman/assist',
-    author='Matthew Holman',
-    author_email='mholman@cfa.harvard.edu',
-    license='GPL',
-    classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
-
-        # Indicate who your project is intended for
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Scientific/Engineering :: Astronomy',
-
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3',
-    ],
-    keywords='astronomy astrophysics nbody integrator',
-    packages=['assist'],
-    package_data={"assist": ["assist.h", "py.typed"]},
-    entry_points={
-        "console_scripts": [
-            "assist=assist.query:main",
-        ],
-    },
+setup(
     cmdclass={'build_ext': build_ext, 'download_data': download_data},
-    setup_requires=['setuptools-scm', 'rebound>=4.4.11', 'numpy'],
-    install_requires=['rebound>=4.4.11', 'numpy', 'astroquery'],
-    extras_require={
-        'server': ['fastapi', 'uvicorn', 'pydantic'],
-    },
-    tests_require=["numpy","matplotlib","rebound"],
-    test_suite="assist.test",
-    ext_modules = [libassistmodule],
-    zip_safe=False) 
+    ext_modules=[libassistmodule],
+) 
