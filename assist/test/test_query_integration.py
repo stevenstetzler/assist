@@ -39,16 +39,18 @@ class TestApophisVsHorizons(unittest.TestCase):
     # Helper
     # ------------------------------------------------------------------
     def _fetch_horizons(self, jd_epochs):
-        """Return an ordered list of (x, y, z) tuples from Horizons (barycentric, ecliptic).
+        """Return an ordered list of (x, y, z) tuples from Horizons (barycentric ICRF).
 
-        Queries are chunked to stay within the Horizons API epoch limit.
+        Uses ``location='@0'`` (SSB) and ``refplane='frame'`` (ICRF J2000), matching
+        ASSIST's native coordinate frame.  Queries are chunked to stay within the
+        Horizons API URL-size limit.
         """
         CHUNK = 50
         rows = []
         for start in range(0, len(jd_epochs), CHUNK):
             chunk = jd_epochs[start : start + CHUNK]
             obj = self._Horizons(id="Apophis", location="@0", epochs=chunk)
-            vecs = obj.vectors(refplane="ecliptic")
+            vecs = obj.vectors(refplane="frame")
             for row in vecs:
                 rows.append((float(row["x"]), float(row["y"]), float(row["z"])))
         return rows

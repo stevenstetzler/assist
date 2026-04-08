@@ -76,7 +76,7 @@ def integrate_endpoint(
     tstep: float = Query(..., description="Output time step in days (> 0)"),
 ) -> List[StateVectorModel]:
     """Integrate the orbit of *desig* from *tstart* to *tstop* and return
-    barycentric ecliptic state vectors sampled every *tstep* days."""
+    barycentric ICRF (equatorial J2000) state vectors sampled every *tstep* days."""
 
     if tstep <= 0:
         raise HTTPException(status_code=422, detail="tstep must be positive")

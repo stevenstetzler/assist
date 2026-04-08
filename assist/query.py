@@ -71,13 +71,14 @@ _load_ephem = load_ephem
 
 
 def query_horizons_state(desig: str, jd: float) -> rebound.Particle:
-    """Return a barycentric ecliptic state vector for *desig* at Julian Date *jd*.
+    """Return a barycentric ICRF state vector for *desig* at Julian Date *jd*.
 
-    Uses ``location='@0'`` (solar-system barycenter) so no Sun-offset correction
-    is required.
+    Uses ``location='@0'`` (solar-system barycenter) and ``refplane='frame'``
+    (equatorial ICRF J2000), matching the native coordinate frame of the JPL
+    binary ephemeris files (de440.bsp / sb441-n16.bsp) used by ASSIST.
     """
     obj = Horizons(id=desig, location="@0", epochs=jd)
-    vecs = obj.vectors(refplane="ecliptic")
+    vecs = obj.vectors(refplane="frame")
     row = vecs[0]
     return rebound.Particle(
         x=float(row["x"]),
@@ -143,7 +144,7 @@ def integrate(
     Returns
     -------
     list of StateVector
-        Barycentric ecliptic positions (AU) and velocities (AU/day) at each
+        Barycentric ICRF positions (AU) and velocities (AU/day) at each
         sampled epoch, including the Julian Date *t*.
     """
     if tstep <= 0:
