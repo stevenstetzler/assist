@@ -25,7 +25,7 @@ import rebound
 from astroquery.jplhorizons import Horizons
 from astroquery.jplsbdb import SBDB
 
-from .ephem import Ephem
+from .ephem import Ephem, ASSIST_BODY_IDS
 from .extras import Extras
 from ._data import get_data_dir
 
@@ -109,6 +109,23 @@ def query_sbdb_nongrav(desig: str) -> tuple[float, float, float]:
 
 
 # ---------------------------------------------------------------------------
+# Helpers for ASSIST perturber bodies
+# ---------------------------------------------------------------------------
+def _find_assist_body_id(desig: str) -> Optional[int]:
+    """Return the ASSIST body index if *desig* matches a known perturber, else None.
+
+    Bodies in :data:`ASSIST_BODY_IDS` (planets, Moon, 16 massive asteroids) are
+    already embedded in the ephemeris files; their positions must be read directly
+    with :meth:`Ephem.get_particle` rather than being re-integrated by ASSIST.
+    """
+    desig_lower = desig.lower()
+    for k, name in ASSIST_BODY_IDS.items():
+        if desig_lower == name.lower():
+            return k
+    return None
+
+
+# ---------------------------------------------------------------------------
 # Main integration function
 # ---------------------------------------------------------------------------
 def integrate(
@@ -155,6 +172,39 @@ def integrate(
     if ephem is None:
         ephem = _load_ephem(planets_bsp, asteroids_bsp)
 
+    # Add half a step to the upper bound so np.arange includes t_final when it
+    # falls exactly on a grid point (floating-point safe).
+    # Clamp any overshoot using a small tolerance (1e-9 days ≈ 0.1 ms).
+    t_initial = tstart - ephem.jd_ref  # JD → days relative to jd_ref
+    t_final   = tstop  - ephem.jd_ref
+    times = np.arange(t_initial, t_final + tstep * 0.5, tstep)
+    times = times[times <= t_final + 1e-9]
+
+    # -----------------------------------------------------------------------
+    # If the target is a known ASSIST perturber body (planet, Moon, or one of
+    # the 16 massive asteroids in ASSIST_BODY_IDS), its trajectory is already
+    # embedded in the BSP ephemeris files.  Reading it directly with
+    # ephem.get_particle() is both faster and more accurate than re-integrating
+    # it with ASSIST (which would introduce small discrepancies).
+    # -----------------------------------------------------------------------
+    body_id = _find_assist_body_id(desig)
+    if body_id is not None:
+        results: List[StateVector] = []
+        for t in times:
+            p = ephem.get_particle(body_id, t)
+            results.append(
+                StateVector(
+                    t=t + ephem.jd_ref,
+                    x=p.x,
+                    y=p.y,
+                    z=p.z,
+                    vx=p.vx,
+                    vy=p.vy,
+                    vz=p.vz,
+                )
+            )
+        return results
+
     # 1. Initial barycentric state from JPL Horizons
     initial_state = query_horizons_state(desig, tstart)
 
@@ -162,9 +212,6 @@ def integrate(
     a1, a2, a3 = query_sbdb_nongrav(desig)
 
     # 3. Build simulation
-    t_initial = tstart - ephem.jd_ref  # JD → days relative to jd_ref
-    t_final = tstop - ephem.jd_ref
-
     sim = rebound.Simulation()
     sim.add(initial_state)
     sim.t = t_initial
@@ -177,12 +224,6 @@ def integrate(
     extras.particle_params = np.array([a1, a2, a3])
 
     # 4. Integrate and sample
-    # Add half a step to the upper bound so np.arange includes t_final when it
-    # falls exactly on a grid point (floating-point safe).
-    # Clamp any overshoot using a small tolerance (1e-9 days ≈ 0.1 ms).
-    times = np.arange(t_initial, t_final + tstep * 0.5, tstep)
-    times = times[times <= t_final + 1e-9]
-
     results: List[StateVector] = []
     for t in times:
         extras.integrate_or_interpolate(t)

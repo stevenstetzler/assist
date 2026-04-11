@@ -10,8 +10,9 @@ Usage
     # Default: Apophis, full 10,000-sample window, save plot to compare_ephemeris.png
     python scripts/compare_ephemeris.py
 
-    # Custom object / window
-    python scripts/compare_ephemeris.py --desig Ceres --tstart 2462138.5 --tstop 2462148.5 --tstep 1.0
+    # Custom object / window (use a non-perturber asteroid — bodies like Ceres that
+    # appear in ASSIST_BODY_IDS are read directly from the ephemeris file)
+    python scripts/compare_ephemeris.py --desig Holman --tstart 2462138.5 --tstop 2462148.5 --tstep 1.0
 
     # Skip the plot (useful in headless environments)
     python scripts/compare_ephemeris.py --no-plot
