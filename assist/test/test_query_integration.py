@@ -31,7 +31,7 @@ class TestAsteroidsVsHorizons(unittest.TestCase):
     N_SAMPLES = 500
     AU_TO_KM  = 149597870.700          # km per AU
 
-    ASTEROIDS = ["Apophis", "Eros", "Achilles", "Chiron", "Eris"]
+    ASTEROIDS = ["Apophis", "Albion", "Achilles", "Chiron", "Eris"]
 
     def setUp(self):
         from assist.query import integrate
