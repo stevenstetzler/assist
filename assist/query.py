@@ -246,20 +246,27 @@ def integrate(
 # ---------------------------------------------------------------------------
 # Output formatters
 # ---------------------------------------------------------------------------
-_ASCII_HEADER = (
-    f"{'t (JD)':>16}  {'x (AU)':>18}  {'y (AU)':>18}  {'z (AU)':>18}"
-    f"  {'vx (AU/d)':>18}  {'vy (AU/d)':>18}  {'vz (AU/d)':>18}"
-)
-_ASCII_SEP = "-" * len(_ASCII_HEADER)
+def _format_ascii(results: List[StateVector], precision: int = 8) -> str:
+    """Return a fixed-width ASCII table of state vectors.
 
-
-def _format_ascii(results: List[StateVector]) -> str:
-    """Return a fixed-width ASCII table of state vectors."""
-    lines = [_ASCII_HEADER, _ASCII_SEP]
+    Uses fixed-point (``f``) notation.  *precision* controls the number of
+    decimal places; the column width is derived automatically so the header
+    labels remain aligned.
+    """
+    # Column width: room for a sign, up to 3 integer digits, decimal point,
+    # and *precision* fractional digits.  Always at least 12 to fit the header.
+    w = max(precision + 6, 12)
+    header = (
+        f"{'t (JD)':>16}  {'x (AU)':>{w}}  {'y (AU)':>{w}}  {'z (AU)':>{w}}"
+        f"  {'vx (AU/d)':>{w}}  {'vy (AU/d)':>{w}}  {'vz (AU/d)':>{w}}"
+    )
+    sep = "-" * len(header)
+    lines = [header, sep]
     for sv in results:
         lines.append(
-            f"{sv.t:>16.4f}  {sv.x:>18.10e}  {sv.y:>18.10e}  {sv.z:>18.10e}"
-            f"  {sv.vx:>18.10e}  {sv.vy:>18.10e}  {sv.vz:>18.10e}"
+            f"{sv.t:>16.4f}"
+            f"  {sv.x:>{w}.{precision}f}  {sv.y:>{w}.{precision}f}  {sv.z:>{w}.{precision}f}"
+            f"  {sv.vx:>{w}.{precision}f}  {sv.vy:>{w}.{precision}f}  {sv.vz:>{w}.{precision}f}"
         )
     return "\n".join(lines)
 
@@ -280,7 +287,7 @@ def _format_csv(results: List[StateVector]) -> str:
 
 
 _FORMATTERS = {
-    "table": _format_ascii,
+    "table": _format_ascii,  # called with (results, precision=...)
     "json": _format_json,
     "csv": _format_csv,
 }
@@ -311,6 +318,16 @@ def main(argv: Optional[list] = None) -> None:
             "'json' prints machine-readable JSON; 'csv' prints comma-separated values."
         ),
     )
+    parser.add_argument(
+        "--output-precision",
+        type=int,
+        default=8,
+        metavar="N",
+        help=(
+            "Number of decimal places in fixed-point output (default: 8). "
+            "Applies to the 'table' format."
+        ),
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -319,7 +336,17 @@ def main(argv: Optional[list] = None) -> None:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
-    print(_FORMATTERS[args.output](results))
+    if args.output == "table":
+        output = _format_ascii(results, precision=args.output_precision)
+    else:
+        output = _FORMATTERS[args.output](results)
+
+    try:
+        print(output)
+    except BrokenPipeError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        sys.exit(0)
 
 
 if __name__ == "__main__":

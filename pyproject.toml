@@ -28,6 +28,7 @@ server = ["fastapi", "uvicorn", "pydantic"]
 
 [project.scripts]
 assist = "assist.query:main"
+horizons = "assist.horizons:main"
 
 [tool.setuptools]
 packages = ["assist"]
