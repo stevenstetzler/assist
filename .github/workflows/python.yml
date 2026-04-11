@@ -74,7 +74,7 @@ jobs:
           key: bsp-de440-sb441-n16
 
       - name: Install package
-        run: pip install ".[server]"
+        run: pip install ".[server,test]"
 
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
@@ -91,7 +91,4 @@ jobs:
         env:
           ASSIST_DIR: ${{ github.workspace }}
         run: |
-          python -m unittest discover \
-            -s "${{ github.workspace }}/assist/test" \
-            -p "test_query_integration.py" \
-            -v
+          pytest "${{ github.workspace }}/assist/test/test_query_integration.py" -v
