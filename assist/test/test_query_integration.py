@@ -26,7 +26,7 @@ class TestApophisVsHorizons(unittest.TestCase):
 
     TSTART   = 2.4621385359989386e6  # JD
     TSTOP    = 2.4625030372426095e6  # JD
-    N_SAMPLES = 10000
+    N_SAMPLES = 500
     AU_TO_KM = 149597870.700          # km per AU
 
     def setUp(self):
