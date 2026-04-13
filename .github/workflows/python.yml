@@ -27,12 +27,10 @@ jobs:
         with:
           path: data/
           key: bsp-de440-sb441-n16
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
+      
+      - name: Install package
+        run: pip install ".[test]"
+        
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
         working-directory: ./data/
