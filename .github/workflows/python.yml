@@ -71,9 +71,17 @@ jobs:
           path: data/
           key: bsp-de440-sb441-n16
 
-      - name: Install package
-        run: pip install ".[server,test]"
+      - name: Install build tooling
+        run: python -m pip install -U pip setuptools wheel build
 
+      - name: Build wheel
+        run: python -m build --wheel
+
+      - name: Install wheel with extras
+        run: |
+          python -m pip install dist/*.whl
+          python -m pip install ".[server,test]"
+          
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
         working-directory: ./data/
