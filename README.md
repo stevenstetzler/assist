@@ -16,28 +16,39 @@ ASSIST supports both ASCII-derived binary ephemerides (e.g., `linux_p1550p2650.4
 
 - If you pass a planets file, ASSIST auto-detects its format at init and uses the matching provider.
 - If you omit the planets path and set `ASSIST_DIR`, ASSIST will try (in order):
-  - `ASSIST_DIR/de441.bsp`
-  - `ASSIST_DIR/de440.bsp`
-  - `ASSIST_DIR/linux_m13000p17000.441`
-  - `ASSIST_DIR/linux_p1550p2650.440`
+  - `ASSIST_DIR/data/de441.bsp`
+  - `ASSIST_DIR/data/de440.bsp`
+  - `ASSIST_DIR/data/linux_m13000p17000.441`
+  - `ASSIST_DIR/data/linux_p1550p2650.440`
 
 Asteroids continue to use SPK (`sb441-n16.bsp` by default), and their masses are joined from the selected planets ephemeris constants.
 
 Constants (AU, EMRAT, J2E, J3E, J4E, J2SUN, RE, CLIGHT, ASUN) are unified onto the ephemeris object and used consistently across force models. Only the required kernel is loaded in memory.
 
-### Recommended downloads
+### Ephemeris files
+
+ASSIST automatically downloads required ephemeris files (~1GB total) on first use to a platform-appropriate location:
+- **Linux/BSD**: `~/.local/share/assist/data`
+- **Windows**: `~/AppData/Local/assist/data`
+- **macOS**: `~/Library/Application Support/assist/data`
+
+To use a custom data directory, set the `ASSIST_DIR` environment variable:
+
+    export ASSIST_DIR=/path/to/custom/location
+
+For manual downloads use:
 
 ```bash
 # Planets (SPK)
-curl https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp -o assist/data/de440.bsp
+curl https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp -o data/de440.bsp
 # Asteroids (SPK)
-curl https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp -o assist/data/sb441-n16.bsp
+curl https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp -o data/sb441-n16.bsp
 ```
 
 ASCII-derived binary planets file (smaller coverage) is also supported:
 
 ```bash
-curl https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440 -o assist/data/linux_p1550p2650.440
+curl https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440 -o data/linux_p1550p2650.440
 ```
 
 ## Installation (Python)
@@ -49,26 +60,52 @@ It's easiest to install ASSIST into a python virtual environment. If you already
 
 Now we can install numpy, REBOUND, and ASSIST:
 
-    pip install numpy
-    pip install rebound 
-    pip install assist
+    pip install numpy rebound assist
 
-To use use ASSIST, you also need to download ephemeris data files. One file for planet ephemeris and another suplementary file for asteroid ephemeris. The following commands download these files with curl. You can also manually download them using your browser. Note that these are large files, almost 1GB in size.
+Or install from this repository:
 
-    mkdir data
-    curl https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440 -o data/linux_p1550p2650.440
-    curl https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp -o data/sb441-n16.bsp
+    pip install .
 
-Now you can try out if assist works.
+Now you can try out if ASSIST works:
 
     python3
 
     >>> import assist
-    >>> ephem = assist.Ephem("data/linux_p1550p2650.440", "data/sb441-n16.bsp")
+    >>> ephem = assist.Ephem()
     >>> print(ephem.jd_ref)
     >>> ephem.get_particle("Earth", 0)
 
 You should see the default reference Julian date (2451545.0) and the position of the Earth at that time printed on the screen.
+
+## Usage
+
+### Command-Line Tool
+
+The `assist` command integrates orbits and outputs state vectors:
+
+    assist <desig> <tstart> <tstop> <tstep>
+
+Example:
+
+    assist Apophis 2462140.4069444 2462340.4069444 0.1
+
+Output formats: `--output table` (default), `--output json`, `--output csv`
+
+### HTTP Server
+
+ASSIST can be deployed as an HTTP Server, providing an ephemeris generation service via an HTTP API. First, install server dependencies:
+
+    pip install '.[server]'
+
+and then run the server:
+
+    uvicorn assist.server:app --reload
+
+Query the `/integrate` endpoint:
+
+    curl "http://localhost:8000/integrate?desig=Apophis&tstart=2462140.4069444&tstop=2462340.4069444&tstep=0.1"
+
+which return a JSON array of barycentric ICRF state vectors (positions in AU, velocities in AU/day).
 
 ## Installation (C)
 
@@ -77,7 +114,7 @@ To install the C version of ASSIST, first clone the REBOUND and then the ASSIST 
     git clone https://github.com/hannorein/rebound.git
     git clone https://github.com/matthewholman/assist.git
 
-To use use ASSIST, you also need to download ephemeris data files. One file for planet ephemeris and another suplementary file for asteroid ephemeris. The following commands download these files with curl. You can also manually download them using your browser. Note that these are large files, almost 1GB in size.
+To use ASSIST, you also need to download ephemeris data files. One file for planet ephemeris and another suplementary file for asteroid ephemeris. The following commands download these files with curl. You can also manually download them using your browser. Note that these are large files, almost 1GB in size.
 
     curl https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440 -o assist/data/linux_p1550p2650.440
     curl https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp -o assist/data/sb441-n16.bsp

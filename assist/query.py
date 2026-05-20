@@ -253,7 +253,7 @@ def _format_ascii(results: List[StateVector], precision: int = 8) -> str:
     lines = [header, sep]
     for sv in results:
         lines.append(
-            f"{sv.t:>16.4f}"
+            f"{sv.t:>16.{precision}f}"
             f"  {sv.x:>{w}.{precision}f}  {sv.y:>{w}.{precision}f}  {sv.z:>{w}.{precision}f}"
             f"  {sv.vx:>{w}.{precision}f}  {sv.vy:>{w}.{precision}f}  {sv.vz:>{w}.{precision}f}"
         )

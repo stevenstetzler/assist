@@ -31,7 +31,7 @@ from .ephem import Ephem
 from .extras import Extras
 from .query import StateVector as _StateVector
 from .query import integrate as _integrate
-from .query import load_ephem, DEFAULT_PLANETS_BSP, DEFAULT_ASTEROIDS_BSP
+from .query import load_ephem, PLANETS_BSP, ASTEROIDS_BSP
 
 app = FastAPI(title="ASSIST Ephemeris Server")
 
@@ -59,7 +59,7 @@ def get_ephem() -> Ephem:
     global _ephem
     if _ephem is None:
         try:
-            _ephem = load_ephem(DEFAULT_PLANETS_BSP, DEFAULT_ASTEROIDS_BSP)
+            _ephem = load_ephem(PLANETS_BSP, ASTEROIDS_BSP)
         except FileNotFoundError as exc:
             raise RuntimeError(str(exc))
     return _ephem
