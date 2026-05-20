@@ -18,7 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "rebound>=4.4.11,<5.0",
+    "rebound",
     "numpy",
     "astroquery",
 ]
