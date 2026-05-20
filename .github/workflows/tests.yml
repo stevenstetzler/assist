@@ -11,14 +11,14 @@ jobs:
         id: cache-bsp
         uses: actions/cache@v5
         with:
-          path: ${{ github.workspace }}/data
+          path: data
           key: de440+linux_p1550p2650+sb441-n16
 
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
         run: |
-          mkdir -p ${{ github.workspace }}/data
-          cd ${{ github.workspace }}/data
+          mkdir -p data
+          cd data
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp
@@ -84,7 +84,7 @@ jobs:
       - name: Reproduce Holman trajectory
         working-directory: unit_tests/holman_spk/
         run: |
-          pwd && echo "..\n" && ls .. && echo "../../\n" && ls ../../ && echo "../../data/\n" && ls ../../data/ && echo "\n" && make && ./rebound
+          pwd && echo "..\n" && ls .. && echo "../../\n" && ls ../../ && echo "../../data/\n" && ls ../../data/ && echo "\n" && cat ../../data/readme.txt && make && ./rebound
 
       # - name: Reproduce Holman trajectory (backwards in time)
       #   working-directory: unit_tests/holman_reverse_spk/
