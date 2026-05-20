@@ -50,7 +50,7 @@ def data_exists() -> bool:
 def download_files(data_dir: Path | str | None = None) -> None:
     """Download the required files into *data_dir*.
 
-    If *data_dir* is ``None``, files are placed in ``get_data_dir()``.
+    If *data_dir* is ``None``, files are placed in ``get_assist_dir()``.
     Existing files are skipped.
     """
     if data_dir is None:

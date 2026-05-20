@@ -83,7 +83,12 @@ jobs:
 
       - name: Reproduce Holman trajectory
         working-directory: unit_tests/holman_spk/
-        run: make && ./rebound
+        run: |
+          pwd
+          ls ../
+          ls ../../
+          ls ../../data/
+          make && ./rebound
 
       - name: Reproduce Holman trajectory (backwards in time)
         working-directory: unit_tests/holman_reverse_spk/
