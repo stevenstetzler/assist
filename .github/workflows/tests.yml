@@ -54,8 +54,8 @@ jobs:
 
       - name: Running unittests
         working-directory: /tmp
-        run: python -m unittest discover -s "${{ github.workspace }}/test" -v
-
+        run: python -m unittest discover -s "${{ github.workspace }}/test" -t "${{ github.workspace }}" -v
+        
       - name: Run integration tests
         working-directory: /tmp
         run: pytest "${{ github.workspace }}/test/test_query_integration.py" -v
@@ -129,4 +129,4 @@ jobs:
 
       - name: ${{ matrix.test.name }}
         working-directory: unit_tests/${{ matrix.test.dir }}/
-        run: make && ./rebound
+        run: make REB_DIR="${{ github.workspace }}/rebound" && ./rebound
