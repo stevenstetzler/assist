@@ -32,6 +32,7 @@ pymodulespath = os.path.dirname(__file__)
 # If a relative path is provided, interpret it relative to the repo root
 # (one directory above the `assist/` package).
 _override = os.environ.get("ASSIST_LIBASSIST_PATH")
+print("override", _override)
 if _override:
     if not os.path.isabs(_override):
         _repo_root = os.path.abspath(os.path.join(pymodulespath, os.pardir))
@@ -41,6 +42,7 @@ else:
     clibassist = cdll.LoadLibrary(pymodulespath + "/../libassist" + suffix)
 
 __libpath__ = str(getattr(clibassist, "_name", ""))
+print("libpath", __libpath__)
 
 
 def _libassist_str(name: str) -> str:

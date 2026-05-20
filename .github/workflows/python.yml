@@ -28,9 +28,6 @@ jobs:
           path: data/
           key: bsp-de440-sb441-n16
       
-      - name: Install package
-        run: pip install ".[test]"
-        
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
         working-directory: ./data/
@@ -39,8 +36,8 @@ jobs:
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp
 
-      - name: Build package
-        run: pip install .
+      - name: Install package
+        run: pip install ".[test]"
 
       - name: Running unittests
         working-directory: /tmp
@@ -70,17 +67,18 @@ jobs:
         with:
           path: data/
           key: bsp-de440-sb441-n16
-
-      - name: Install package
-        run: pip install ".[server,test]"
-          
+      
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
         working-directory: ./data/
         run: |
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp
+          wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp
 
+      - name: Install package
+        run: pip install ".[server,test]"
+          
       - name: Verify assist CLI is installed
         run: assist --help
 
