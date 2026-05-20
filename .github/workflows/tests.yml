@@ -61,54 +61,9 @@ jobs:
   c-tests:
     env:
       LD_LIBRARY_PATH: ${{ github.workspace }}/rebound/src
+      REB_DIR: ${{ github.workspace }}/rebound
     needs: download-ephemeris
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        test:
-          - name: Reproduce Holman trajectory
-            dir: holman_spk
-          - name: Reproduce Holman trajectory (backwards in time)
-            dir: holman_reverse_spk
-          - name: Reproduce Apophis Encounter (non gravitational forces)
-            dir: apophis_spk
-          - name: Reproduce Ceres-5303 encounter
-            dir: 5303_Ceres_spk
-          - name: Test interpolation
-            dir: interpolation_spk
-          - name: Test onthefly interpolation
-            dir: onthefly_interpolation
-          - name: Test onthefly backwards interpolation
-            dir: onthefly_backwards_interpolation
-          - name: Test ephem_cache
-            dir: ephem_cache
-          - name: Test variational
-            dir: variational_spk
-          - name: Test roundtrip
-            dir: roundtrip_spk
-          - name: Test roundtrip adaptive
-            dir: roundtrip_adaptive_spk
-          - name: Convert to REBOUND
-            dir: convert_simulation_spk
-          - name: Run benchmark
-            dir: benchmark
-          - name: Test Loading Spice Kernels
-            dir: spk_init
-          - name: Test Loading Constants from Planet SPK
-            dir: spk_load_constants
-          - name: Test Joining Mass Data from SPK
-            dir: spk_join_masses
-          - name: Test SPK planets position evaluation
-            dir: spk_planets_calc
-          - name: Test ephemeris format detection
-            dir: format_detection
-          - name: Test SPK vs ASCII-derived binary detection
-            dir: spk_detection
-          - name: Test ASCII-derived binary init/constants
-            dir: ascii_init_constants
-          - name: Test ASCII source rejection
-            dir: ascii_reject
-
     steps:
       - name: Checkout ASSIST
         uses: actions/checkout@v6
@@ -126,6 +81,86 @@ jobs:
           path: data/
           key: de440+linux_p1550p2650+sb441-n16
 
-      - name: ${{ matrix.test.name }}
-        working-directory: unit_tests/${{ matrix.test.dir }}/
-        run: make REB_DIR="${{ github.workspace }}/rebound" && ./rebound
+      - name: Reproduce Holman trajectory
+        working-directory: unit_tests/holman_spk/
+        run: make && ./rebound
+
+      - name: Reproduce Holman trajectory (backwards in time)
+        working-directory: unit_tests/holman_reverse_spk/
+        run: make && ./rebound
+
+      - name: Reproduce Apophis Encounter (non gravitational forces)
+        working-directory: unit_tests/apophis_spk/
+        run: make && ./rebound
+
+      - name: Reproduce Ceres-5303 encounter
+        working-directory: unit_tests/5303_Ceres_spk/
+        run: make && ./rebound
+
+      - name: Test interpolation
+        working-directory: unit_tests/interpolation_spk/
+        run: make && ./rebound
+
+      - name: Test onthefly interpolation
+        working-directory: unit_tests/onthefly_interpolation/
+        run: make && ./rebound
+
+      - name: Test onthefly backwards interpolation
+        working-directory: unit_tests/onthefly_backwards_interpolation/
+        run: make && ./rebound
+
+      - name: Test ephem_cache
+        working-directory: unit_tests/ephem_cache/
+        run: make && ./rebound
+
+      - name: Test variational
+        working-directory: unit_tests/variational_spk/
+        run: make && ./rebound
+
+      - name: Test roundtrip
+        working-directory: unit_tests/roundtrip_spk/
+        run: make && ./rebound
+
+      - name: Test roundtrip adaptive
+        working-directory: unit_tests/roundtrip_adaptive_spk/
+        run: make && ./rebound
+
+      - name: Convert to REBOUND
+        working-directory: unit_tests/convert_simulation_spk/
+        run: make && ./rebound
+
+      - name: Run benchmark
+        working-directory: unit_tests/benchmark/
+        run: make && ./rebound
+
+      - name: Test Loading Spice Kernels
+        working-directory: unit_tests/spk_init/
+        run: make && ./rebound
+
+      - name: Test Loading Constants from Planet SPK
+        working-directory: unit_tests/spk_load_constants/
+        run: make && ./rebound
+
+      - name: Test Joining Mass Data from SPK
+        working-directory: unit_tests/spk_join_masses/
+        run: make && ./rebound
+
+      - name: Test SPK planets position evaluation
+        working-directory: unit_tests/spk_planets_calc/
+        run: make && ./rebound
+
+      - name: Test ephemeris format detection
+        working-directory: unit_tests/format_detection/
+        run: make && ./rebound
+
+      - name: Test SPK vs ASCII-derived binary detection
+        working-directory: unit_tests/spk_detection/
+        run: make && ./rebound
+
+      - name: Test ASCII-derived binary init/constants
+        working-directory: unit_tests/ascii_init_constants/
+        run: make && ./rebound
+
+      - name: Test ASCII source rejection
+        working-directory: unit_tests/ascii_reject/
+        run: make && ./rebound
