@@ -39,12 +39,12 @@ def get_assist_dir() -> Path:
     return Path.home() / "Library" / "Application Support" / "assist"
 
 def data_path(p : str) -> str:
-    return str(get_assist_dir() / p)
+    return str(get_assist_dir() / "data" / p)
 
 def data_exists() -> bool:
     """Return True if all required BSP files are present in the data directory."""
     data_dir = get_assist_dir()
-    return all((data_dir / fname).exists() for fname in _FILES)
+    return all((data_dir / "data" / fname).exists() for fname in _FILES)
 
 
 def download_files(data_dir: Path | str | None = None) -> None:
@@ -54,7 +54,7 @@ def download_files(data_dir: Path | str | None = None) -> None:
     Existing files are skipped.
     """
     if data_dir is None:
-        data_dir = get_assist_dir()
+        data_dir = get_assist_dir() / "data"
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
     for filename, url in _FILES.items():
