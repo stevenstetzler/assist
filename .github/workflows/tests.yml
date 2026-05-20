@@ -42,7 +42,7 @@ jobs:
       - name: Restore BSP ephemeris cache
         uses: actions/cache@v5
         with:
-          path: data/
+          path: data
           key: de440+linux_p1550p2650+sb441-n16
 
       - name: Install package
@@ -78,7 +78,7 @@ jobs:
       - name: Restore BSP ephemeris cache
         uses: actions/cache@v5
         with:
-          path: data/
+          path: data
           key: de440+linux_p1550p2650+sb441-n16
 
       - name: Reproduce Holman trajectory
