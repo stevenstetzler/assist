@@ -25,7 +25,7 @@ dependencies = [
 
 [project.optional-dependencies]
 server = ["fastapi", "uvicorn", "pydantic"]
-test = ["pytest"]
+test = ["pytest". "matplotlib"]
 
 [project.scripts]
 assist = "assist.query:main"
