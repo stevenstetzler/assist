@@ -50,7 +50,7 @@ jobs:
 
       - name: Running unittests
         env:
-          ASSIST_DIR: ${{ github.workspace }}
+          ASSIST_DIR: ${{ github.workspace }}/data
         working-directory: /tmp
         run: python -m unittest discover -s "${{ github.workspace }}/assist/test" -v
         
@@ -73,7 +73,7 @@ jobs:
         with:
           repository: hannorein/rebound
           path: rebound
-          ref: v4.6
+          ref: 4.6.0
 
       - name: Restore BSP ephemeris cache
         uses: actions/cache@v5
