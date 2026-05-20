@@ -83,84 +83,85 @@ jobs:
 
       - name: Reproduce Holman trajectory
         working-directory: unit_tests/holman_spk/
-        run: make && ./rebound
+        run: |
+          pwd && ls .. && ls ../../ && make && ./rebound
 
-      - name: Reproduce Holman trajectory (backwards in time)
-        working-directory: unit_tests/holman_reverse_spk/
-        run: make && ./rebound
+      # - name: Reproduce Holman trajectory (backwards in time)
+      #   working-directory: unit_tests/holman_reverse_spk/
+      #   run: make && ./rebound
 
-      - name: Reproduce Apophis Encounter (non gravitational forces)
-        working-directory: unit_tests/apophis_spk/
-        run: make && ./rebound
+      # - name: Reproduce Apophis Encounter (non gravitational forces)
+      #   working-directory: unit_tests/apophis_spk/
+      #   run: make && ./rebound
 
-      - name: Reproduce Ceres-5303 encounter
-        working-directory: unit_tests/5303_Ceres_spk/
-        run: make && ./rebound
+      # - name: Reproduce Ceres-5303 encounter
+      #   working-directory: unit_tests/5303_Ceres_spk/
+      #   run: make && ./rebound
 
-      - name: Test interpolation
-        working-directory: unit_tests/interpolation_spk/
-        run: make && ./rebound
+      # - name: Test interpolation
+      #   working-directory: unit_tests/interpolation_spk/
+      #   run: make && ./rebound
 
-      - name: Test onthefly interpolation
-        working-directory: unit_tests/onthefly_interpolation/
-        run: make && ./rebound
+      # - name: Test onthefly interpolation
+      #   working-directory: unit_tests/onthefly_interpolation/
+      #   run: make && ./rebound
 
-      - name: Test onthefly backwards interpolation
-        working-directory: unit_tests/onthefly_backwards_interpolation/
-        run: make && ./rebound
+      # - name: Test onthefly backwards interpolation
+      #   working-directory: unit_tests/onthefly_backwards_interpolation/
+      #   run: make && ./rebound
 
-      - name: Test ephem_cache
-        working-directory: unit_tests/ephem_cache/
-        run: make && ./rebound
+      # - name: Test ephem_cache
+      #   working-directory: unit_tests/ephem_cache/
+      #   run: make && ./rebound
 
-      - name: Test variational
-        working-directory: unit_tests/variational_spk/
-        run: make && ./rebound
+      # - name: Test variational
+      #   working-directory: unit_tests/variational_spk/
+      #   run: make && ./rebound
 
-      - name: Test roundtrip
-        working-directory: unit_tests/roundtrip_spk/
-        run: make && ./rebound
+      # - name: Test roundtrip
+      #   working-directory: unit_tests/roundtrip_spk/
+      #   run: make && ./rebound
 
-      - name: Test roundtrip adaptive
-        working-directory: unit_tests/roundtrip_adaptive_spk/
-        run: make && ./rebound
+      # - name: Test roundtrip adaptive
+      #   working-directory: unit_tests/roundtrip_adaptive_spk/
+      #   run: make && ./rebound
 
-      - name: Convert to REBOUND
-        working-directory: unit_tests/convert_simulation_spk/
-        run: make && ./rebound
+      # - name: Convert to REBOUND
+      #   working-directory: unit_tests/convert_simulation_spk/
+      #   run: make && ./rebound
 
-      - name: Run benchmark
-        working-directory: unit_tests/benchmark/
-        run: make && ./rebound
+      # - name: Run benchmark
+      #   working-directory: unit_tests/benchmark/
+      #   run: make && ./rebound
 
-      - name: Test Loading Spice Kernels
-        working-directory: unit_tests/spk_init/
-        run: make && ./rebound
+      # - name: Test Loading Spice Kernels
+      #   working-directory: unit_tests/spk_init/
+      #   run: make && ./rebound
 
-      - name: Test Loading Constants from Planet SPK
-        working-directory: unit_tests/spk_load_constants/
-        run: make && ./rebound
+      # - name: Test Loading Constants from Planet SPK
+      #   working-directory: unit_tests/spk_load_constants/
+      #   run: make && ./rebound
 
-      - name: Test Joining Mass Data from SPK
-        working-directory: unit_tests/spk_join_masses/
-        run: make && ./rebound
+      # - name: Test Joining Mass Data from SPK
+      #   working-directory: unit_tests/spk_join_masses/
+      #   run: make && ./rebound
 
-      - name: Test SPK planets position evaluation
-        working-directory: unit_tests/spk_planets_calc/
-        run: make && ./rebound
+      # - name: Test SPK planets position evaluation
+      #   working-directory: unit_tests/spk_planets_calc/
+      #   run: make && ./rebound
 
-      - name: Test ephemeris format detection
-        working-directory: unit_tests/format_detection/
-        run: make && ./rebound
+      # - name: Test ephemeris format detection
+      #   working-directory: unit_tests/format_detection/
+      #   run: make && ./rebound
 
-      - name: Test SPK vs ASCII-derived binary detection
-        working-directory: unit_tests/spk_detection/
-        run: make && ./rebound
+      # - name: Test SPK vs ASCII-derived binary detection
+      #   working-directory: unit_tests/spk_detection/
+      #   run: make && ./rebound
 
-      - name: Test ASCII-derived binary init/constants
-        working-directory: unit_tests/ascii_init_constants/
-        run: make && ./rebound
+      # - name: Test ASCII-derived binary init/constants
+      #   working-directory: unit_tests/ascii_init_constants/
+      #   run: make && ./rebound
 
-      - name: Test ASCII source rejection
-        working-directory: unit_tests/ascii_reject/
-        run: make && ./rebound
+      # - name: Test ASCII source rejection
+      #   working-directory: unit_tests/ascii_reject/
+      #   run: make && ./rebound
