@@ -25,12 +25,12 @@ jobs:
         id: cache-bsp
         uses: actions/cache@v4
         with:
-          path: data/
+          path: ~/.local/share/assist
           key: bsp-de440-sb441-n16
       
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
-        working-directory: ./data/
+        working-directory: ~/.local/share/assist
         run: |
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440
@@ -65,12 +65,12 @@ jobs:
         id: cache-bsp
         uses: actions/cache@v4
         with:
-          path: data/
+          path: ~/.local/share/assist
           key: bsp-de440-sb441-n16
       
       - name: Download ephemeris data
         if: steps.cache-bsp.outputs.cache-hit != 'true'
-        working-directory: ./data/
+        working-directory: ~/.local/share/assist
         run: |
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp
           wget --no-verbose https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440

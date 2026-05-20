@@ -46,3 +46,4 @@ Untitled*
 *.code-workspace
 .eggs/*
 docs/c_examples/*.md
+deviation*.png

@@ -7,7 +7,8 @@ import sys
 import urllib.request
 from pathlib import Path
 
-_BSP_FILES = {
+_FILES = {
+    "linux_p1550p2650.440": "https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de440/linux_p1550p2650.440",
     "de440.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440.bsp",
     "sb441-n16.bsp": "https://ssd.jpl.nasa.gov/ftp/eph/small_bodies/asteroids_de441/sb441-n16.bsp",
 }
@@ -35,26 +36,29 @@ def get_data_dir() -> Path:
         return Path(local_appdata) / "assist"
 
     # macOS and anything else
-    return Path.home() / "Library" / "Application Support" / "assist"
+    return Path.home() / "Library" / "Application Support" / "assist" / "data"
 
+
+def data_path(p : str) -> str:
+    return str(get_data_dir() / p)
 
 def data_exists() -> bool:
     """Return True if all required BSP files are present in the data directory."""
-    data_dir = get_data_dir() / "data"
-    return all((data_dir / fname).exists() for fname in _BSP_FILES)
+    data_dir = get_data_dir()
+    return all((data_dir / fname).exists() for fname in _FILES)
 
 
-def download_bsp_files(data_dir: Path | str | None = None) -> None:
-    """Download the required BSP ephemeris files into *data_dir*.
+def download_files(data_dir: Path | str | None = None) -> None:
+    """Download the required files into *data_dir*.
 
-    If *data_dir* is ``None``, files are placed in ``get_data_dir() / "data"``.
+    If *data_dir* is ``None``, files are placed in ``get_data_dir()``.
     Existing files are skipped.
     """
     if data_dir is None:
-        data_dir = get_data_dir() / "data"
+        data_dir = get_data_dir()
     data_dir = Path(data_dir)
     data_dir.mkdir(parents=True, exist_ok=True)
-    for filename, url in _BSP_FILES.items():
+    for filename, url in _FILES.items():
         dest = data_dir / filename
         if dest.exists():
             print(f"  {filename} already present, skipping.")
@@ -68,4 +72,4 @@ def _check_data() -> None:
     """Check whether required BSP files exist; download them automatically if not."""
     if not data_exists():
         print("ASSIST data files missing. Downloading now...")
-        download_bsp_files()
+        download_files()

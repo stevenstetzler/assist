@@ -1,6 +1,6 @@
 import math
 import unittest
-from _data_paths import data_path
+from assist.data import data_path
 
 import numpy as np
 import rebound

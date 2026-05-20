@@ -27,16 +27,10 @@ from astroquery.jplsbdb import SBDB
 
 from .ephem import Ephem, ASSIST_BODY_IDS
 from .extras import Extras
-from ._data import get_data_dir
+from .data import data_path
 
-# ---------------------------------------------------------------------------
-# Ephemeris file paths
-# ---------------------------------------------------------------------------
-_assist_dir = get_data_dir()
-DEFAULT_DATA_DIR = str(_assist_dir / "data")
-DEFAULT_PLANETS_BSP = str(_assist_dir / "data" / "de440.bsp")
-DEFAULT_ASTEROIDS_BSP = str(_assist_dir / "data" / "sb441-n16.bsp")
-
+PLANETS_BSP = data_path("de440.bsp")
+ASTEROIDS_BSP = data_path("sb441-n16.bsp")
 
 # ---------------------------------------------------------------------------
 # Data classes
@@ -55,7 +49,7 @@ class StateVector:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-def load_ephem(planets_bsp: str = DEFAULT_PLANETS_BSP, asteroids_bsp: str = DEFAULT_ASTEROIDS_BSP) -> Ephem:
+def load_ephem(planets_bsp: str = PLANETS_BSP, asteroids_bsp: str = ASTEROIDS_BSP) -> Ephem:
     """Load the ASSIST ephemeris, raising a descriptive error if BSP files are missing."""
     for path in (planets_bsp, asteroids_bsp):
         if not os.path.exists(path):
@@ -70,14 +64,14 @@ def load_ephem(planets_bsp: str = DEFAULT_PLANETS_BSP, asteroids_bsp: str = DEFA
 _load_ephem = load_ephem
 
 
-def query_horizons_state(desig: str, jd: float) -> rebound.Particle:
+def query_horizons_state(desig: str, jd: float, center="@0") -> rebound.Particle:
     """Return a barycentric ICRF state vector for *desig* at Julian Date *jd*.
 
     Uses ``location='@0'`` (solar-system barycenter) and ``refplane='frame'``
     (equatorial ICRF J2000), matching the native coordinate frame of the JPL
     binary ephemeris files (de440.bsp / sb441-n16.bsp) used by ASSIST.
     """
-    obj = Horizons(id=desig, location="@0", epochs=jd)
+    obj = Horizons(id=desig, location=center, epochs=jd)
     vecs = obj.vectors(refplane="frame")
     row = vecs[0]
     return rebound.Particle(
@@ -100,12 +94,7 @@ def query_sbdb_nongrav(desig: str) -> tuple[float, float, float]:
     orbit = result.get("orbit", {})
     model_pars = orbit.get("model_pars", []) or []
 
-    nongrav = {mp["name"]: float(mp["value"]) for mp in model_pars if "name" in mp and "value" in mp}
-
-    a1 = nongrav.get("A1", 0.0)
-    a2 = nongrav.get("A2", 0.0)
-    a3 = nongrav.get("A3", 0.0)
-    return a1, a2, a3
+    return tuple(model_pars[x].value if x in model_pars else 0.0 for x in ["A1", "A2", "A3"])
 
 
 # ---------------------------------------------------------------------------
@@ -134,8 +123,8 @@ def integrate(
     tstop: float,
     tstep: float,
     ephem: Optional[Ephem] = None,
-    planets_bsp: str = DEFAULT_PLANETS_BSP,
-    asteroids_bsp: str = DEFAULT_ASTEROIDS_BSP,
+    planets_bsp: str = PLANETS_BSP,
+    asteroids_bsp: str = ASTEROIDS_BSP,
 ) -> List[StateVector]:
     """Integrate the orbit of *desig* from *tstart* to *tstop*.
 
@@ -205,13 +194,10 @@ def integrate(
             )
         return results
 
-    # 1. Initial barycentric state from JPL Horizons
-    initial_state = query_horizons_state(desig, tstart)
+    # get initial barycentric state from JPL Horizons
+    initial_state = query_horizons_state(desig, tstart, center="@0")
 
-    # 2. Non-gravitational parameters from JPL SBDB
-    a1, a2, a3 = query_sbdb_nongrav(desig)
-
-    # 3. Build simulation
+    # create rebound simulation with particle at initial state
     sim = rebound.Simulation()
     sim.add(initial_state)
     sim.t = t_initial
@@ -219,9 +205,12 @@ def integrate(
 
     extras = Extras(sim, ephem)
     extras.gr_eih_sources = 11  # GR for Sun and all planets
-    # Apply non-gravitational parameters: A1 (radial), A2 (transverse), A3 (normal)
-    # These model rocket-like accelerations (e.g. cometary outgassing, Yarkovsky effect).
-    extras.particle_params = np.array([a1, a2, a3])
+
+    # Get non-gravitational parameters from JPL SBDB
+    a1, a2, a3 = query_sbdb_nongrav(desig)
+    if any([x != 0.0 for x in [a1, a2, a3]]): 
+        # add non-grav forces
+        extras.particle_params = np.array([a1, a2, a3])
 
     # 4. Integrate and sample
     results: List[StateVector] = []

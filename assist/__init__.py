@@ -23,7 +23,7 @@ libassistversion = __version__
 if moduleversion != libassistversion:
     print("WARNING: python module and libassist have different version numbers: ", moduleversion, libassistversion)
 
-from ._data import _check_data, get_data_dir
+from .data import _check_data, get_data_dir
 _check_data()
 
 # Avoid importing heavy optional dependencies (like numpy via `assist.extras`)
