@@ -125,6 +125,7 @@ def integrate(
     ephem: Optional[Ephem] = None,
     planets_bsp: str = PLANETS_BSP,
     asteroids_bsp: str = ASTEROIDS_BSP,
+    center = None,
 ) -> List[StateVector]:
     """Integrate the orbit of *desig* from *tstart* to *tstop*.
 
@@ -161,6 +162,13 @@ def integrate(
     if ephem is None:
         ephem = _load_ephem(planets_bsp, asteroids_bsp)
 
+    if center is None:
+        from types import SimpleNamespace
+        o = SimpleNamespace(**dict(x=0, y=0, z=0, vx=0, vy=0, vz=0))
+        get_r = lambda t : o
+    else:
+        get_r = lambda t : ephem.get_particle(center, t)
+
     # Add half a step to the upper bound so np.arange includes t_final when it
     # falls exactly on a grid point (floating-point safe).
     # Clamp any overshoot using a small tolerance (1e-9 days ≈ 0.1 ms).
@@ -181,15 +189,16 @@ def integrate(
         results: List[StateVector] = []
         for t in times:
             p = ephem.get_particle(body_id, t)
+            r = get_r(t)
             results.append(
                 StateVector(
                     t=t + ephem.jd_ref,
-                    x=p.x,
-                    y=p.y,
-                    z=p.z,
-                    vx=p.vx,
-                    vy=p.vy,
-                    vz=p.vz,
+                    x=p.x - r.x,
+                    y=p.y - r.y,
+                    z=p.z - r.z,
+                    vx=p.vx - r.vx,
+                    vy=p.vy - r.vy,
+                    vz=p.vz - r.vz,
                 )
             )
         return results
@@ -217,20 +226,20 @@ def integrate(
     for t in times:
         extras.integrate_or_interpolate(t)
         p = sim.particles[0]
+        r = get_r(t)
         results.append(
             StateVector(
                 t=t + ephem.jd_ref,
-                x=p.x,
-                y=p.y,
-                z=p.z,
-                vx=p.vx,
-                vy=p.vy,
-                vz=p.vz,
+                x=p.x - r.x,
+                y=p.y - r.y,
+                z=p.z - r.z,
+                vx=p.vx - r.vx,
+                vy=p.vy - r.vy,
+                vz=p.vz - r.vz,
             )
         )
 
     return results
-
 
 # ---------------------------------------------------------------------------
 # Output formatters
@@ -308,7 +317,7 @@ def main(argv: Optional[list] = None) -> None:
         ),
     )
     parser.add_argument(
-        "--output-precision",
+        "--precision",
         type=int,
         default=8,
         metavar="N",
@@ -317,16 +326,21 @@ def main(argv: Optional[list] = None) -> None:
             "Applies to the 'table' format."
         ),
     )
+    parser.add_argument(
+        "--center",
+        type=str,
+        default=None,
+    )
     args = parser.parse_args(argv)
 
     try:
-        results = integrate(args.desig, args.tstart, args.tstop, args.tstep)
+        results = integrate(args.desig, args.tstart, args.tstop, args.tstep, center=args.center)
     except (ValueError, FileNotFoundError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
     if args.output == "table":
-        output = _format_ascii(results, precision=args.output_precision)
+        output = _format_ascii(results, precision=args.precision)
     else:
         output = _FORMATTERS[args.output](results)
 

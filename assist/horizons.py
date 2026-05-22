@@ -12,7 +12,7 @@ import sys
 from decimal import Decimal
 
 
-def _fetch_horizons_batch(desig: str, jd_epochs: list):
+def _fetch_horizons_batch(desig: str, jd_epochs: list, center="@0"):
     """Yield ``(jd, x, y, z, vx, vy, vz)`` rows from Horizons as :class:`Decimal`.
 
     Queries are chunked into groups of 50 to stay within the API URL-size limit.
@@ -23,7 +23,7 @@ def _fetch_horizons_batch(desig: str, jd_epochs: list):
     CHUNK = 50
     for start in range(0, len(jd_epochs), CHUNK):
         chunk = jd_epochs[start: start + CHUNK]
-        obj = Horizons(id=desig, location="@0", epochs=chunk)
+        obj = Horizons(id=desig, location=center, epochs=chunk)
         vecs = obj.vectors(refplane="frame")
         for row in vecs:
             yield (
@@ -53,20 +53,26 @@ def main(argv=None):
     parser.add_argument("tstop", type=float, help="Stop Julian Date")
     parser.add_argument("tstep", type=float, help="Output time step in days")
     parser.add_argument(
-        "--output-precision",
+        "--precision",
         type=int,
         default=8,
         metavar="N",
         help="Number of decimal places in fixed-point output (default: 8).",
     )
+    parser.add_argument(
+        "--center",
+        type=str,
+        default="@0",
+    )
+
     args = parser.parse_args(argv)
 
     jd_epochs = [
         args.tstart + i * args.tstep
         for i in range(int((args.tstop - args.tstart) / args.tstep) + 1)
     ]
-    rows = _fetch_horizons_batch(args.desig, jd_epochs)
-    p = args.output_precision
+    rows = _fetch_horizons_batch(args.desig, jd_epochs, center=args.center)
+    p = args.precision
     try:
         for jd, x, y, z, vx, vy, vz in rows:
             print(
