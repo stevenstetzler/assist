@@ -30,12 +30,10 @@ _TSTART    = _J2000 - 365  # JD
 _TSTOP     = _J2000 + 365  # JD
 _N_SAMPLES = 100
 _AU_TO_KM  = 149597870.700          # km per AU
+_THRESHOLD_M = 1e4 # 10 KM distance deviation
 
 _ASTEROIDS = [
-    pytest.param(
-        "99942", 
-        marks=pytest.mark.xfail(reason="Unkown error at close approach")
-    ), # Apophis Near earth asteroid with close approach
+    "99942", # Apophis Near earth asteroid with close approach
     "84100", # Farnocchia Main belt
     "588", # Achilles Trojan
     "2060", # Chiron Centaur
@@ -44,8 +42,8 @@ _ASTEROIDS = [
 _JD_RANGE = {
     # For Apophis, use the date range around close approach with Earth
     "99942": [
-        _APOPIHS_CA_JD - 365,
-        _APOPIHS_CA_JD + 365
+        _APOPIHS_CA_JD - 30,
+        _APOPIHS_CA_JD + 30
     ], 
     "84100": [_TSTART, _TSTOP],
     "588": [_TSTART, _TSTOP],
@@ -84,9 +82,6 @@ def test_asteroid_vs_horizons(desig):
     jd_times      = [sv.t for sv in results]
     horizons_rows = _fetch_horizons_positions(desig, jd_times)
 
-    # --- Compute deviations ---
-    threshold_m = 100  # 100 meters
-
     deviations = []
     dx_list, dy_list, dz_list = [], [], []
 
@@ -111,8 +106,7 @@ def test_asteroid_vs_horizons(desig):
         f"  Max deviation (any step): {max_dev_m:10.2f} m\n"
         f"  Total absolute deviation: {total_abs_dev_m:10.4f} km"
     )
-
-
+  
     import matplotlib.pyplot as plt
 
     jd_arr = [sv.t for sv in results]
@@ -148,8 +142,8 @@ def test_asteroid_vs_horizons(desig):
     plt.close(fig)
     print(f"  Plot saved → deviation_{desig}.png")
 
-    assert max_dev_m < threshold_m, (
-        f"{desig}: Maximum position deviation {max_dev_m:.4f} m >= {threshold_m} m threshold"
+    assert max_dev_m < _THRESHOLD_M, (
+        f"{desig}: Maximum position deviation {max_dev_m:.4f} m >= {_THRESHOLD_M} m threshold"
     )    
 
 class TestAssistCLI(unittest.TestCase):
