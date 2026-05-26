@@ -30,7 +30,8 @@ _TSTART    = _J2000 - 365  # JD
 _TSTOP     = _J2000 + 365  # JD
 _N_SAMPLES = 100
 _AU_TO_KM  = 149597870.700          # km per AU
-_THRESHOLD_M = 1e4 # 10 KM distance deviation
+_THRESHOLD_M = 1e2 # 100 m distance deviation
+_THRESHOLD_APOPHIS_M = 1e4 # 10 km distance deviation
 
 _ASTEROIDS = [
     "99942", # Apophis Near earth asteroid with close approach
@@ -72,6 +73,10 @@ def test_asteroid_vs_horizons(desig):
     tstart, tstop = _JD_RANGE[desig]
     n      = _N_SAMPLES
     tstep  = (tstop - tstart) / n
+    if desig == "99942":
+        threshold_m = _THRESHOLD_APOPHIS_M
+    else:
+        threshold_m = _THRESHOLD_M
 
     # --- ASSIST integration ---
     results = integrate(desig, tstart, tstop, tstep)
@@ -142,8 +147,8 @@ def test_asteroid_vs_horizons(desig):
     plt.close(fig)
     print(f"  Plot saved → deviation_{desig}.png")
 
-    assert max_dev_m < _THRESHOLD_M, (
-        f"{desig}: Maximum position deviation {max_dev_m:.4f} m >= {_THRESHOLD_M} m threshold"
+    assert max_dev_m < threshold_m, (
+        f"{desig}: Maximum position deviation {max_dev_m:.4f} m >= {threshold_m} m threshold"
     )    
 
 class TestAssistCLI(unittest.TestCase):
