@@ -3,7 +3,7 @@ import assist
 import unittest
 import math
 import numpy as np
-from _data_paths import data_path
+from assist.data import data_path
 
 class TestAssistSPK(unittest.TestCase):
     def test_apophis(self):

@@ -1,3 +1,40 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=61.0", "setuptools-scm", "rebound>=4.4.11,<5.0", "numpy"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "assist"
+dynamic = ["version"]
+description = "A library for high accuracy ephemeris in REBOUND"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["astronomy", "astrophysics", "nbody", "integrator"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "rebound>=4.4.11,<5.0",
+    "numpy",
+    "astroquery",
+]
+
+[project.optional-dependencies]
+server = ["fastapi", "uvicorn", "pydantic"]
+test = ["pytest", "matplotlib"]
+
+[project.scripts]
+assist = "assist.query:main"
+horizons = "assist.horizons:main"
+
+[tool.setuptools]
+packages = ["assist"]
+
+[tool.setuptools.package-data]
+assist = ["assist.h", "py.typed"]
+
+[tool.setuptools_scm]

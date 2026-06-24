@@ -1,16 +1,37 @@
 import inspect
 import os
 import sys
-from codecs import open
 from distutils import sysconfig
 from distutils.sysconfig import get_python_lib
 
 try:
     from setuptools import Extension, setup
     from setuptools.command.build_ext import build_ext as _build_ext
+    import setuptools
 except ImportError:
     print("Installing ASSIST requires setuptools.  Do 'pip install setuptools'.")
     sys.exit(1)
+
+
+class download_data(setuptools.Command):
+    """Custom 'setup.py download_data' command to fetch BSP ephemeris files."""
+
+    description = "Download required BSP ephemeris files into the data/ directory"
+    user_options = [
+        ("data-dir=", None, "Directory in which to place the downloaded BSP files"),
+    ]
+
+    def initialize_options(self):
+        self.data_dir = None
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from pathlib import Path
+        from assist.data import download_bsp_files, get_data_dir
+        data_dir = Path(self.data_dir) if self.data_dir else (get_data_dir() / "data")
+        download_bsp_files(data_dir)
 
 suffix = sysconfig.get_config_var('EXT_SUFFIX')
 if suffix is None:
@@ -137,46 +158,7 @@ libassistmodule = Extension(
     extra_link_args=extra_link_args,
 )
 
-here = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
-setup(name='assist',
-    version='1.1.9',
-    description='A library high accuracy ephemeris in REBOUND',
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url='https://github.com/matthewholman/assist',
-    author='Matthew Holman',
-    author_email='mholman@cfa.harvard.edu',
-    license='GPL',
-    classifiers=[
-        # How mature is this project? Common values are
-        #   3 - Alpha
-        #   4 - Beta
-        #   5 - Production/Stable
-        'Development Status :: 5 - Production/Stable',
-
-        # Indicate who your project is intended for
-        'Intended Audience :: Science/Research',
-        'Intended Audience :: Developers',
-        'Topic :: Software Development :: Build Tools',
-        'Topic :: Scientific/Engineering :: Astronomy',
-
-        # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
-
-        # Specify the Python versions you support here. In particular, ensure
-        # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3',
-    ],
-    keywords='astronomy astrophysics nbody integrator',
-    packages=['assist'],
-    package_data={"assist": ["assist.h", "py.typed"]},
-    cmdclass={'build_ext':build_ext},
-    setup_requires=['rebound>=4.4.11', 'numpy'],
-    install_requires=['rebound>=4.4.11', 'numpy'],
-    tests_require=["numpy","matplotlib","rebound"],
-    test_suite="assist.test",
-    ext_modules = [libassistmodule],
-    zip_safe=False) 
+setup(
+    cmdclass={'build_ext': build_ext, 'download_data': download_data},
+    ext_modules=[libassistmodule],
+) 

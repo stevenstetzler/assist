@@ -2,7 +2,7 @@ import rebound
 import assist
 import unittest
 import math
-from _data_paths import data_path
+from assist.data import data_path
 
 class TestForcesASCII(unittest.TestCase):
     def test_errors(self):

@@ -46,3 +46,6 @@ Untitled*
 *.code-workspace
 .eggs/*
 docs/c_examples/*.md
+deviation*.png
+*.bsp
+linux_p1550p2650.440
