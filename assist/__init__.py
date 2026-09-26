@@ -23,6 +23,9 @@ libassistversion = __version__
 if moduleversion != libassistversion:
     print("WARNING: python module and libassist have different version numbers: ", moduleversion, libassistversion)
 
+from .data import _check_data, get_assist_dir
+_check_data()
+
 # Avoid importing heavy optional dependencies (like numpy via `assist.extras`)
 # at package import time. This keeps `import assist` lightweight and also
 # makes relocation/linking tests easier to isolate.
@@ -43,4 +46,5 @@ __all__ = [
     "Extras",
     "Ephem",
     "simulation_convert_to_rebound",
+    "get_assist_dir",
 ]

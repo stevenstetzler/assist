@@ -8,9 +8,31 @@ from distutils.sysconfig import get_python_lib
 try:
     from setuptools import Extension, setup
     from setuptools.command.build_ext import build_ext as _build_ext
+    import setuptools
 except ImportError:
     print("Installing ASSIST requires setuptools.  Do 'pip install setuptools'.")
     sys.exit(1)
+
+
+class download_data(setuptools.Command):
+    """Custom 'setup.py download_data' command to fetch BSP ephemeris files."""
+
+    description = "Download required BSP ephemeris files into the data/ directory"
+    user_options = [
+        ("data-dir=", None, "Directory in which to place the downloaded BSP files"),
+    ]
+
+    def initialize_options(self):
+        self.data_dir = None
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        from pathlib import Path
+        from assist.data import download_files, get_assist_dir
+        data_dir = Path(self.data_dir) if self.data_dir else (get_assist_dir() / "data")
+        download_files(data_dir)
 
 suffix = sysconfig.get_config_var('EXT_SUFFIX')
 if suffix is None:
@@ -173,7 +195,7 @@ setup(name='assist',
     keywords='astronomy astrophysics nbody integrator',
     packages=['assist'],
     package_data={"assist": ["assist.h", "py.typed"]},
-    cmdclass={'build_ext':build_ext},
+    cmdclass={'build_ext':build_ext, 'download_data':download_data},
     setup_requires=['rebound>=4.4.11', 'numpy'],
     install_requires=['rebound>=4.4.11', 'numpy'],
     tests_require=["numpy","matplotlib","rebound"],
